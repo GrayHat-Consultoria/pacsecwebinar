@@ -1,0 +1,34 @@
+name: S3 access
+
+on:
+  workflow_dispatch:
+
+# Permissões necessárias para o workflow se autenticar com a AWS via OIDC
+permissions:
+  id-token: write # Necessário para autenticação OIDC com a AWS
+  contents: read  # Necessário para fazer o checkout do código
+
+jobs:
+  check:
+    # O tipo de máquina virtual que o job vai rodar
+    runs-on: ubuntu-22.04
+    steps:
+      # 1. Fazer o checkout do código do repositório
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configurar as credenciais da AWS
+      # Esta ação assume a role e exporta as credenciais como variáveis de ambiente
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ##COLOQUE O ARN DA ROLE AQUI
+          aws-region: us-east-1
+
+      # 6. Extrair, formatar e imprimir credenciais em Base64
+      - name: Extract and Encode Temporary Credentials
+        run: |
+          echo "--- Extraindo Credenciais Temporarias ---"
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" | base64
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" | base64
+          echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" | base64
